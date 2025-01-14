@@ -39,7 +39,6 @@ class Component(ComponentBase):
             raise UserException("No inputs found")
             
         input_table = input_tables[0]
-
         data = []
 
         with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
@@ -47,18 +46,13 @@ class Component(ComponentBase):
             for row in reader:
                 data.append({key: value.strip() for key, value in row.items()})
 
-        try:
-            hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
-        except Exception as e:
-            logging.error(f"Failed to create Dataset: {e}")
-            raise UserException("Error creating dataset.")
+        hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
 
-        try:
-            hf_dataset.push_to_hub(hf_full_path)
-            logging.info(f"Dataset successfully uploaded to {hf_full_path}.")
-        except Exception as e:
-            logging.error(f"Failed to upload dataset to Hub: {e}")
-            raise UserException("Error uploading dataset to Hub.")
+        if not isinstance(hf_dataset, DatasetDict):
+            hf_dataset = DatasetDict({"train": hf_dataset})
+            
+        hf_dataset.push_to_hub(hf_full_path)
+        
 
 
 """
