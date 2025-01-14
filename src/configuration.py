@@ -33,4 +33,6 @@ class ConfigurationBase:
 @dataclass
 class Configuration(ConfigurationBase):
     data_name: str  
+    user_name: str
+    file_path: str
     pswd_hf_token: str 

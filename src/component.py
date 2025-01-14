@@ -1,6 +1,8 @@
 import csv
 import pandas as pd
 import logging
+
+from huggingface_hub import login
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 from configuration import Configuration
@@ -19,7 +21,11 @@ class Component(ComponentBase):
         self.init_configuration()
 
         dataset_name = self._configuration.data_name
-        hf_token = self._configuration.pswd_hf_token
+        hf_file_path = self._configuration.file_path
+        hf_username = self._configuration.user_name
+        HF_TOKEN = self._configuration.pswd_hf_token
+
+        login(HF_TOKEN)
 
         input_tables = self.get_input_tables_definitions()
         input_files = self.get_input_files_definitions()
@@ -44,7 +50,6 @@ class Component(ComponentBase):
         try:
             dataset_dict.push_to_hub(
                 repo_id=dataset_name,
-                token=hf_token,
                 private=True
             )
             logging.info(f"Dataset '{dataset_name}' uploaded successfully to Hugging Face.")

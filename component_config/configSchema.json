@@ -3,20 +3,30 @@
   "title": "Writer configuration",
   "required": [
     "data_name",
+    "user_name",
     "#hf_token"
   ],
   "properties": {
     "data_name": {
       "type": "string",
-      "title": "Data Name",
-      "description": "Name of the dataset",
+      "title": "Dataset Name",
       "propertyOrder": 1
+    },
+    "user_name": {
+      "type": "string",
+      "title": "Username",
+      "propertyOrder": 2
+    },
+    "file_path": {
+      "type": "string",
+      "title": "File Path",
+      "propertyOrder": 4
     },
     "#api_token": {
       "type": "string",
       "format": "token",
       "title": "Hugging Face API token",
-      "propertyOrder": 2
+      "propertyOrder": 3
     }
   }
 }
