@@ -22,7 +22,7 @@
       "title": "File Path",
       "propertyOrder": 4
     },
-    "#api_token": {
+    "#hf_token": {
       "type": "string",
       "format": "token",
       "title": "Hugging Face API token",
