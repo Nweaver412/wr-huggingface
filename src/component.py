@@ -37,7 +37,8 @@ class Component(ComponentBase):
         # input_files = self.get_input_files_definitions()
 
         if len(input_tables) == 0:
-            raise UserException("No inputs found")
+            logging.exception("No inputs found")
+            exit(1)
             
         input_table = input_tables[0]
         # data = []
@@ -49,12 +50,12 @@ class Component(ComponentBase):
         #         data.append({key: value.strip() for key, value in row.items()})
 
         # Transform the data into a Hugging Face data dict
-        Dataset.from_csv(input_table.full_path).push_to_hub(hf_full_path)
+        hf_dataset = Dataset.from_csv(input_table.full_path)
     #     hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
-    #     hf_dataset = DatasetDict({"train": hf_dataset})
+        hf_dataset = DatasetDict({"train": hf_dataset})
        
     #    # Push to hub
-    #     hf_dataset.push_to_hub(hf_full_path)
+        hf_dataset.push_to_hub("nweaver412/dataset_keboola")
         
 """
         Main entrypoint
