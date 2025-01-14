@@ -45,11 +45,17 @@ class Component(ComponentBase):
             reader = csv.DictReader(inp_file)
             for row in reader:
                 data.append({key: value.strip() for key, value in row.items()})
+        print('Read from input print')
+        logging.exception('Read from input log')
 
         hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
         hf_dataset = DatasetDict({"train": hf_dataset})
-        
+        print('Transformed print')
+        logging.exception('Transformed log')
+
         hf_dataset.push_to_hub(hf_full_path)
+        print('Pushed to hub print')
+        logging.exception('Pushed to hub log')
         
 """
         Main entrypoint
