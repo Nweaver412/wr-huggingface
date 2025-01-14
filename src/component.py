@@ -41,20 +41,21 @@ class Component(ComponentBase):
             exit(1)
             
         input_table = input_tables[0]
-        # data = []
+        
+        with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
+            reader = csv.DictReader(inp_file)
+            output_file = '/mnt/data/output_data.csv'
+            with open(output_file, mode='w', encoding='utf-8', newline='') as out_file:
+                writer = csv.DictWriter(out_file, fieldnames=reader.fieldnames)
+                writer.writeheader()
+                for row in reader:
+                    writer.writerow(row)
 
-        # # Read the input table
-        # with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
-        #     reader = csv.DictReader(inp_file)
-        #     for row in reader:
-        #         data.append({key: value.strip() for key, value in row.items()})
-
-        # Transform the data into a Hugging Face data dict
-        hf_dataset = Dataset.from_csv(input_table.full_path)
-    #     hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
+        # Load the CSV file into dataset
+        hf_dataset = Dataset.from_csv(output_file)
         hf_dataset = DatasetDict({"train": hf_dataset})
-       
-    #    # Push to hub
+
+        # Push to Hugging Face Hub
         hf_dataset.push_to_hub("nweaver412/dataset_keboola")
         
 """
