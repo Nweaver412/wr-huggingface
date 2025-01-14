@@ -1,87 +1,56 @@
-"""
-Template Component main class.
-
-"""
 import csv
-from datetime import datetime
+import pandas as pd
 import logging
-
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
-
 from configuration import Configuration
-
+from datasets import Dataset, DatasetDict
 
 class Component(ComponentBase):
-    """
-        Extends base class for general Python components. Initializes the CommonInterface
-        and performs configuration validation.
-
-        For easier debugging the data folder is picked up by default from `../data` path,
-        relative to working directory.
-
-        If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
-    """
-
     def __init__(self):
         super().__init__()
+        self._configuration = None
+
+    def init_configuration(self):
+        self.validate_configuration_parameters(Configuration.get_dataclass_required_parameters())
+        self._configuration: Configuration = Configuration.load_from_dict(self.configuration.parameters)
 
     def run(self):
-        """
-        Main execution code
-        """
+        self.init_configuration()
 
-        # ####### EXAMPLE TO REMOVE
-        # check for missing configuration parameters
-        params = Configuration(**self.configuration.parameters)
+        dataset_name = self._configuration.data_name
+        hf_token = self._configuration.pswd_hf_token
 
-        # Access parameters in configuration
-        if params.print_hello:
-            logging.info("Hello World")
-
-        # get input table definitions
         input_tables = self.get_input_tables_definitions()
-        for table in input_tables:
-            logging.info(f'Received input table: {table.name} with path: {table.full_path}')
+        input_files = self.get_input_files_definitions()
 
-        if len(input_tables) == 0:
-            raise UserException("No input tables found")
-
-        # get last state data/in/state.json from previous run
-        previous_state = self.get_state_file()
-        logging.info(previous_state.get('some_parameter'))
-
-        # Create output table (Table definition - just metadata)
-        table = self.create_out_table_definition('output.csv', incremental=True, primary_key=['timestamp'])
-
-        # get file path of the table (data/out/tables/Features.csv)
-        out_table_path = table.full_path
-        logging.info(out_table_path)
-
-        # Add timestamp column and save into out_table_path
+        if len(input_tables and input_files) == 0:
+            raise UserException("No inputs found")
+            
         input_table = input_tables[0]
-        with (open(input_table.full_path, 'r') as inp_file,
-              open(table.full_path, mode='wt', encoding='utf-8', newline='') as out_file):
+
+        data = []
+
+        with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
             reader = csv.DictReader(inp_file)
+            for row in reader:
+                data.append({key: value.strip() for key, value in row.items()})
 
-            columns = list(reader.fieldnames)
-            # append timestamp
-            columns.append('timestamp')
+        hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
+        dataset_dict = DatasetDict({
+            "train": hf_dataset
+        })
 
-            # write result with column added
-            writer = csv.DictWriter(out_file, fieldnames=columns)
-            writer.writeheader()
-            for in_row in reader:
-                in_row['timestamp'] = datetime.now().isoformat()
-                writer.writerow(in_row)
-
-        # Save table manifest (output.csv.manifest) from the Table definition
-        self.write_manifest(table)
-
-        # Write new state - will be available next run
-        self.write_state_file({"some_state_parameter": "value"})
-
-        # ####### EXAMPLE TO REMOVE END
+        try:
+            dataset_dict.push_to_hub(
+                repo_id=dataset_name,
+                token=hf_token,
+                private=True
+            )
+            logging.info(f"Dataset '{dataset_name}' uploaded successfully to Hugging Face.")
+        except Exception as e:
+            logging.exception(f"Failed to upload dataset: {e}")
+            raise UserException("Dataset upload failed.")
 
 
 """

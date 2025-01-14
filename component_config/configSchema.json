@@ -1,18 +1,21 @@
 {
   "type": "object",
-  "title": "extractor configuration",
+  "title": "Writer configuration",
   "required": [
-    "print_hello"
+    "data_name",
+    "#hf_token"
   ],
   "properties": {
-    "print_hello": {
-      "type": "boolean",
-      "title": "Print Hello",
+    "data_name": {
+      "type": "string",
+      "title": "Data Name",
+      "description": "Name of the dataset",
       "propertyOrder": 1
     },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug",
+    "#api_token": {
+      "type": "string",
+      "format": "token",
+      "title": "Hugging Face API token",
       "propertyOrder": 2
     }
   }
