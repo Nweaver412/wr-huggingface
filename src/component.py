@@ -2,7 +2,7 @@ import csv
 import pandas as pd
 import logging
 
-from huggingface_hub import login
+from huggingface_hub import login, HfApi
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 from configuration import Configuration
@@ -47,14 +47,10 @@ class Component(ComponentBase):
                 data.append({key: value.strip() for key, value in row.items()})
 
         hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
-
-        if not isinstance(hf_dataset, DatasetDict):
-            hf_dataset = DatasetDict({"train": hf_dataset})
-            
+        hf_dataset = DatasetDict({"train": hf_dataset})
+        
         hf_dataset.push_to_hub(hf_full_path)
         
-
-
 """
         Main entrypoint
 """
