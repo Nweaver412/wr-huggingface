@@ -25,6 +25,7 @@ class Component(ComponentBase):
         hf_username = self._configuration.user_name
         HF_TOKEN = self._configuration.pswd_hf_token
 
+        # Change to filepath struct like expected input
         if hf_file_path:
             hf_full_path = f"{hf_username}/{hf_file_path}/{dataset_name}"
         else:
@@ -39,23 +40,21 @@ class Component(ComponentBase):
             raise UserException("No inputs found")
             
         input_table = input_tables[0]
-        data = []
+        # data = []
 
-        with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
-            reader = csv.DictReader(inp_file)
-            for row in reader:
-                data.append({key: value.strip() for key, value in row.items()})
-        print('Read from input print')
-        logging.exception('Read from input log')
+        # # Read the input table
+        # with open(input_table.full_path, mode='r', encoding='utf-8') as inp_file:
+        #     reader = csv.DictReader(inp_file)
+        #     for row in reader:
+        #         data.append({key: value.strip() for key, value in row.items()})
 
-        hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
-        hf_dataset = DatasetDict({"train": hf_dataset})
-        print('Transformed print')
-        logging.exception('Transformed log')
-
-        hf_dataset.push_to_hub(hf_full_path)
-        print('Pushed to hub print')
-        logging.exception('Pushed to hub log')
+        # Transform the data into a Hugging Face data dict
+        Dataset.from_csv(input_table.full_path).push_to_hub(hf_full_path)
+    #     hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
+    #     hf_dataset = DatasetDict({"train": hf_dataset})
+       
+    #    # Push to hub
+    #     hf_dataset.push_to_hub(hf_full_path)
         
 """
         Main entrypoint
