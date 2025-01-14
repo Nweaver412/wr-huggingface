@@ -44,7 +44,7 @@ class Component(ComponentBase):
 
         hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
         dataset_dict = DatasetDict({
-            "train": hf_dataset
+            "train": hf_dataset 
         })
 
         try:
