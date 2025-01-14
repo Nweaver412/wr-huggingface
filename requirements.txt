@@ -4,3 +4,7 @@ keboola.http-client
 freezegun
 mock
 pydantic
+pandas
+numpy
+huggingface_hub
+datasets
