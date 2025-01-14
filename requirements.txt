@@ -6,5 +6,8 @@ mock
 pydantic
 pandas
 numpy
+json
+typing
 huggingface_hub
 datasets
+dataconf
