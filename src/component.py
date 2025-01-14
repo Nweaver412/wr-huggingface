@@ -25,12 +25,17 @@ class Component(ComponentBase):
         hf_username = self._configuration.user_name
         HF_TOKEN = self._configuration.pswd_hf_token
 
+        if hf_file_path:
+            hf_full_path = f"{hf_username}/{hf_file_path}/{dataset_name}"
+        else:
+            hf_full_path = f"{hf_username}/{dataset_name}"
+
         login(HF_TOKEN)
 
         input_tables = self.get_input_tables_definitions()
-        input_files = self.get_input_files_definitions()
+        # input_files = self.get_input_files_definitions()
 
-        if len(input_tables and input_files) == 0:
+        if len(input_tables) == 0:
             raise UserException("No inputs found")
             
         input_table = input_tables[0]
@@ -42,20 +47,18 @@ class Component(ComponentBase):
             for row in reader:
                 data.append({key: value.strip() for key, value in row.items()})
 
-        hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
-        dataset_dict = DatasetDict({
-            "train": hf_dataset 
-        })
+        try:
+            hf_dataset = Dataset.from_pandas(pd.DataFrame(data))
+        except Exception as e:
+            logging.error(f"Failed to create Dataset: {e}")
+            raise UserException("Error creating dataset.")
 
         try:
-            dataset_dict.push_to_hub(
-                repo_id=dataset_name,
-                private=True
-            )
-            logging.info(f"Dataset '{dataset_name}' uploaded successfully to Hugging Face.")
+            hf_dataset.push_to_hub(hf_full_path)
+            logging.info(f"Dataset successfully uploaded to {hf_full_path}.")
         except Exception as e:
-            logging.exception(f"Failed to upload dataset: {e}")
-            raise UserException("Dataset upload failed.")
+            logging.error(f"Failed to upload dataset to Hub: {e}")
+            raise UserException("Error uploading dataset to Hub.")
 
 
 """
